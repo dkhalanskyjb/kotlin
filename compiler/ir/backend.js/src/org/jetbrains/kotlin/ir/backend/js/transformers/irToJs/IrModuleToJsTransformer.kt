@@ -159,9 +159,7 @@ class IrModuleToJsTransformer(
         val (crossModuleImports, importedKotlinModules) = generateCrossModuleImports(nameGenerator, modules, dependencies, { JsName(sanitizeName(it), false) })
         val crossModuleExports = generateCrossModuleExports(modules, refInfo, internalModuleName)
 
-        val program = JsProgram().apply {
-            staticContext.polyfills.addAllNeededPolyfillsTo(globalBlock.statements)
-        }
+        val program = JsProgram()
 
         if (generateScriptModule) {
             with(program.globalBlock) {
