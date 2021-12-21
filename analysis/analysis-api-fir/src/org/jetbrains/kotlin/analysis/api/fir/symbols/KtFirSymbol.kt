@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
+import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticPropertyAccessor
 import org.jetbrains.kotlin.fir.originalIfFakeOverride
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.scopes.impl.importedFromObjectData
@@ -50,8 +51,10 @@ internal tailrec fun FirDeclaration.ktSymbolOrigin(): KtSymbolOrigin = when (ori
     FirDeclarationOrigin.IntersectionOverride -> KtSymbolOrigin.INTERSECTION_OVERRIDE
     FirDeclarationOrigin.Delegated -> KtSymbolOrigin.DELEGATED
     FirDeclarationOrigin.Synthetic -> {
-        when {
-            this is FirSyntheticProperty -> KtSymbolOrigin.JAVA_SYNTHETIC_PROPERTY
+        when (this) {
+            is FirSyntheticProperty -> KtSymbolOrigin.JAVA_SYNTHETIC_PROPERTY
+            // TODO synthetic accessor might require a separate type of origin in the future
+            is FirSyntheticPropertyAccessor -> KtSymbolOrigin.JAVA_SYNTHETIC_PROPERTY
             else -> throw InvalidFirDeclarationOriginForSymbol(this)
         }
     }

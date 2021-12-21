@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.api.getOrBuildFirSafe
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.buildImport
-import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
 import org.jetbrains.kotlin.fir.declarations.utils.classId
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isLocal
@@ -37,7 +36,6 @@ import org.jetbrains.kotlin.analysis.api.fir.getCandidateSymbols
 import org.jetbrains.kotlin.analysis.api.fir.KtFirAnalysisSession
 import org.jetbrains.kotlin.analysis.api.fir.KtSymbolByFirBuilder
 import org.jetbrains.kotlin.analysis.api.fir.buildSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirSyntheticPropertySymbol
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -97,18 +95,7 @@ internal object FirReferenceResolveHelper {
                 listOfNotNull(resolvedSymbol.fir.buildSymbol(symbolBuilder))
             }
             is FirResolvedNamedReference -> {
-                val fir = when (val symbol = resolvedSymbol) {
-                    is FirSyntheticPropertySymbol -> {
-                        val syntheticProperty = symbol.fir as FirSyntheticProperty
-                        if (syntheticProperty.getter.delegate.symbol.callableId == symbol.getterId) {
-                            syntheticProperty.getter.delegate
-                        } else {
-                            syntheticProperty.setter!!.delegate
-                        }
-                    }
-                    else -> symbol.fir
-                }
-                listOfNotNull(fir.buildSymbol(symbolBuilder))
+                listOfNotNull(resolvedSymbol.fir.buildSymbol(symbolBuilder))
             }
             is FirThisReference -> {
                 val boundSymbol = boundSymbol

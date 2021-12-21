@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.analysis.api.fir.findReferencePsi
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.KtSymbolBasedReference
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KtFirSymbol
+import org.jetbrains.kotlin.analysis.api.fir.symbols.KtFirSyntheticJavaPropertySymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtCallableSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtSymbolOrigin
@@ -18,6 +19,12 @@ interface KtFirReference : KtReference, KtSymbolBasedReference {
     fun getResolvedToPsi(analysisSession: KtAnalysisSession): Collection<PsiElement> = with(analysisSession) {
         resolveToSymbols().flatMap { symbol ->
             when (symbol) {
+                is KtFirSyntheticJavaPropertySymbol -> {
+                    val setterOrGetter = (symbol.setter ?: symbol.getter) as KtFirSymbol<*>
+
+                    getPsiDeclarations(setterOrGetter)
+                }
+
                 is KtFirSymbol<*> -> getPsiDeclarations(symbol)
                 else -> listOfNotNull(symbol.psi)
             }
