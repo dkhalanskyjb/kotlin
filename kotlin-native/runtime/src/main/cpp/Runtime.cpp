@@ -423,10 +423,13 @@ void CallInitGlobalPossiblyLock(int volatile* state, void (*init)()) {
     int threadId = konan::currentThreadId();
     if ((localState & 3) == FILE_BEING_INITIALIZED) {
         if ((localState & ~3) != (threadId << 2)) {
+            // Switch to the native state to avoid dead-locks.
+            kotlin::ThreadStateGuard guard(kotlin::ThreadState::kNative);
             do {
                 localState = *state;
                 if (localState == FILE_FAILED_TO_INITIALIZE)
-                    ThrowFileFailedToInitializeException();
+                    // Call of a Kotlin function.
+                    kotlin::CallWithThreadState<kotlin::ThreadState::kRunnable>(ThrowFileFailedToInitializeException);
             } while (localState != FILE_INITIALIZED);
         }
         return;
@@ -445,10 +448,13 @@ void CallInitGlobalPossiblyLock(int volatile* state, void (*init)()) {
 #endif
         *state = FILE_INITIALIZED;
     } else {
+        // Switch to the native state to avoid dead-locks.
+        kotlin::ThreadStateGuard guard(kotlin::ThreadState::kNative);
         do {
             localState = *state;
             if (localState == FILE_FAILED_TO_INITIALIZE)
-                ThrowFileFailedToInitializeException();
+                // Call of a Kotlin function.
+                kotlin::CallWithThreadState<kotlin::ThreadState::kRunnable>(ThrowFileFailedToInitializeException);
         } while (localState != FILE_INITIALIZED);
     }
 }
